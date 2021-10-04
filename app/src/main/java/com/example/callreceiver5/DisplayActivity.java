@@ -54,14 +54,21 @@ import android.view.MenuItem;
 
 
 public class DisplayActivity extends AppCompatActivity {
-
+    TextView callinfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        
+        //リスナー設定
+        TelephonyManager telephonyManager = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
+        telephonyManager.listen(mListener, PhoneStateListener.LISTEN_CALL_STATE);
+
+
+
+
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,20 +80,40 @@ public class DisplayActivity extends AppCompatActivity {
             }
         });
 
-        TextView tv = (TextView) this.findViewById(R.id.hwLabel);
+        TextView tv = (TextView) this.findViewById(R.id.callinfo);
         SharedPreferences pref = getSharedPreferences("CallReceiver", MODE_PRIVATE);
         tv.setText(pref.getString("text","nothing..Button"));
 
 
     }
 
-
+    PhoneStateListener mListener = new PhoneStateListener(){
+        @Override
+        public void onCallStateChanged(int state, String callNumber) {
+            //Log.d(TAG, ":" + state+"-PhoneNumber:"+callNumber);
+            switch(state){
+                case TelephonyManager.CALL_STATE_IDLE:      //待ち受け（終了時）
+                    Toast.makeText(DisplayActivity.this, "通話終了\nCALL_STATE_IDLE", Toast.LENGTH_LONG).show();
+                    break;
+                case TelephonyManager.CALL_STATE_RINGING:   //着信*
+                    if(callNumber==null){
+                        callNumber="";
+                    }
+                    Toast.makeText(DisplayActivity.this, "着信中\nCALL_STATE_RINGING: " + callNumber, Toast.LENGTH_SHORT).show();
+                    callinfo.setText("着信："+callNumber);
+                    break;
+                case TelephonyManager.CALL_STATE_OFFHOOK:   //通話
+                    Toast.makeText(DisplayActivity.this, "通話中\nCALL_STATE_OFFHOOK", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+    };
 
 
     @Override
     protected void onResume() {
         super.onResume();
-        TextView tv = (TextView) this.findViewById(R.id.hwLabel);
+        TextView tv = (TextView) this.findViewById(R.id.callinfo);
         SharedPreferences pref = getSharedPreferences("CallReceiver", MODE_PRIVATE);
         tv.setText(pref.getString("text", "nothing..何もない.."));
 
@@ -98,7 +125,7 @@ public class DisplayActivity extends AppCompatActivity {
         Snackbar.make(view, "histories cleared.", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show();
 
-        TextView tv = (TextView) this.findViewById(R.id.hwLabel);
+        TextView tv = (TextView) this.findViewById(R.id.callinfo);
         SharedPreferences pref = getSharedPreferences("CallReceiver", MODE_PRIVATE);
         tv.setText(pref.getString("text", "nothing..clearHistories"));
     }
