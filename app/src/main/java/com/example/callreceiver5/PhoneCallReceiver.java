@@ -22,13 +22,6 @@ public class PhoneCallReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        switch (intent.getAction()) {
-        case "jp.co.acesystems.callreceiver.MY_BROADCAST":
-            // ここで受信したブロードキャストに対する処理を実行
-            break;
-        }
-
-
         ctx = context;
         try {
             //TelephonyManagerの生成
